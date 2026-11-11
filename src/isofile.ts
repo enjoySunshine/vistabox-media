@@ -100,6 +100,7 @@ import type {
 } from '@types';
 import { MP4BoxBuffer } from '#/mp4boxbuffer';
 import { parseOneBox } from '#/parser';
+import { defragment, type DefragmentChunk, type DefragmentOptions } from '#/defragment';
 
 export class SampleGroupInfo {
   last_sample_in_run = -1;
@@ -1329,6 +1330,25 @@ export class ISOFile<TSegmentUser = unknown, TSampleUser = unknown> {
     stream.isofile = this;
     this.write(stream);
     return stream;
+  }
+
+  /**
+   * Converts a fully parsed fragmented file (moov with mvex and a series of
+   * moof/mdat boxes) into a regular progressive file: moov first, without
+   * mvex nor moof, with complete sample tables (stts/ctts/stsc/stsz/stco or
+   * co64/stss) and a single mdat.
+   *
+   * The output is yielded as fixed-size chunks so that neither the input nor
+   * the output needs to be held entirely in memory; see DefragmentOptions for
+   * the chunk size and the optional range reader used for multi-GB files.
+   *
+   * The ISOFile must have received all its data and have been flushed before
+   * calling this method.
+   *
+   * @bundle isofile-write.js
+   */
+  defragment(options?: DefragmentOptions): AsyncGenerator<DefragmentChunk> {
+    return defragment(this, options);
   }
 
   /** @bundle isofile-write.js */

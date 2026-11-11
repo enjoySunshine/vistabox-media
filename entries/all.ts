@@ -4,6 +4,7 @@ export * from '#/boxes/sampleentries/base';
 export * from '#/buffer';
 export * from '#/create-file';
 export * from '#/DataStream';
+export * from '#/defragment';
 export * from '#/descriptor';
 export * from '#/isofile';
 export * from '#/log';
